@@ -35,6 +35,10 @@
       border: none;
       cursor: pointer;
     }
+    #message {
+      margin-top: 10px;
+      color: red;
+    }
   </style>
 </head>
 <body>
@@ -50,8 +54,8 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
-      'https://ohllbliwedftnyqmthze.supabase.co', // your Supabase URL
-      'your-public-anon-key-here' // replace with your real anon key
+      'https://ohllbliwedftnyqmthze.supabase.co', // ✅ Your Supabase URL
+      'YOUR_ANON_PUBLIC_KEY_HERE' // 🔁 Replace this with your actual anon public API key
     );
 
     const url = new URL(window.location.href);
@@ -59,28 +63,39 @@
 
     if (!accessToken) {
       alert("Missing access token");
+      throw new Error("Access token missing");
     }
 
-    async function resetPassword() {
+    // Set the access token in the session manually
+    await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: '' // Not required here
+    });
+
+    window.resetPassword = async function () {
       const newPassword = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
+      const message = document.getElementById("message");
 
-      if (newPassword !== confirmPassword) {
-        document.getElementById("message").innerText = "Passwords do not match.";
+      if (!newPassword || !confirmPassword) {
+        message.innerText = "Please fill in both fields.";
         return;
       }
 
-      const { data, error } = await supabase.auth.updateUser(
-        { password: newPassword },
-        { accessToken }
-      );
+      if (newPassword !== confirmPassword) {
+        message.innerText = "Passwords do not match.";
+        return;
+      }
+
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
 
       if (error) {
-        document.getElementById("message").innerText = error.message;
+        message.innerText = error.message;
       } else {
-        document.getElementById("message").innerText = "Password reset successfully!";
+        message.style.color = "green";
+        message.innerText = "Password reset successfully!";
       }
-    }
+    };
   </script>
 </body>
 </html>
