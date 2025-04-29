@@ -59,18 +59,20 @@
     );
 
     const url = new URL(window.location.href);
-    const accessToken = url.searchParams.get("access_token");
+    const recoveryToken = url.searchParams.get("code");
 
-    if (!accessToken) {
-      alert("Missing access token");
-      throw new Error("Access token missing");
+    if (!recoveryToken) {
+      alert("Missing recovery code");
+      throw new Error("Missing code in URL");
     }
 
-    // Set the session using the token from the reset link
-    await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: '' // not needed for password reset
-    });
+    // Set the session with the recovery token
+    const { data, error } = await supabase.auth.exchangeCodeForSession(recoveryToken);
+
+    if (error) {
+      alert("Invalid or expired token. Please try the reset link again.");
+      throw error;
+    }
 
     window.resetPassword = async function () {
       const newPassword = document.getElementById("password").value;
