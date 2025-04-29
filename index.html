@@ -54,8 +54,8 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabase = createClient(
-      'https://ohllbliwedftnyqmthze.supabase.co', // ✅ Your Supabase URL
-      'YOUR_ANON_PUBLIC_KEY_HERE' // 🔁 Replace this with your actual anon public API key
+      'https://ohllbliwedftnyqmthze.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9obGxibGl3ZWRmdG55cW10aHplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM1NDIxMzAsImV4cCI6MjA1OTExODEzMH0.XW1XNf7v3-JX94-1xJNgPM70t2qvZoEClyAab85ie1o'
     );
 
     const url = new URL(window.location.href);
@@ -66,10 +66,10 @@
       throw new Error("Access token missing");
     }
 
-    // Set the access token in the session manually
+    // Set the session using the token from the reset link
     await supabase.auth.setSession({
       access_token: accessToken,
-      refresh_token: '' // Not required here
+      refresh_token: '' // not needed for password reset
     });
 
     window.resetPassword = async function () {
