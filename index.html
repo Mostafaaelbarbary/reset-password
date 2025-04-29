@@ -1,101 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Reset Your Password</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f8f9fa;
-      margin: 0;
-      padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100vh;
+      margin: 0;
     }
     .container {
       background: #fff;
       padding: 30px;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      width: 100%;
       max-width: 400px;
+      width: 100%;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    input[type="password"] {
+    input, button {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
       border-radius: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
     }
     button {
-      width: 100%;
-      padding: 12px;
-      background-color: #007BFF;
+      background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 5px;
-      font-weight: bold;
       cursor: pointer;
-      margin-top: 20px;
-    }
-    button:hover {
-      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>Reset Your Password</h2>
+    <input type="password" id="password" placeholder="New Password"/>
+    <input type="password" id="confirmPassword" placeholder="Confirm Password"/>
+    <button onclick="resetPassword()">Reset Password</button>
+    <p id="message"></p>
+  </div>
 
-<div class="container">
-  <h2>Reset Your Password</h2>
-  <form id="reset-password-form">
-    <input type="password" id="new-password" placeholder="New Password" required minlength="8">
-    <input type="password" id="confirm-password" placeholder="Confirm Password" required minlength="8">
-    <button type="submit">Reset Password</button>
-  </form>
-</div>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const url = new URL(window.location.href);
-  const access_token = url.hash.match(/access_token=([^&]*)/)?.[1];
+    const supabase = createClient(
+      'https://ohllbliwedftnyqmthze.supabase.co', // your Supabase URL
+      'your-public-anon-key-here' // replace with your real anon key
+    );
 
-  if (!access_token) {
-    alert('Missing access token');
-  }
+    const url = new URL(window.location.href);
+    const accessToken = url.searchParams.get("access_token");
 
-  const supabase = window.supabase.createClient(
-    'https://YOUR-PROJECT-REF.supabase.co', 
-    'YOUR-ANON-KEY'
-  );
-
-  document.getElementById('reset-password-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
-
-    if (newPassword !== confirmPassword) {
-      alert('Passwords do not match');
-      return;
+    if (!accessToken) {
+      alert("Missing access token");
     }
 
-    const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+    async function resetPassword() {
+      const newPassword = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
 
-    if (error) {
-      alert('Error: ' + error.message);
-    } else {
-      alert('Password updated successfully!');
-      window.location.href = '/'; // Redirect to login or home page
+      if (newPassword !== confirmPassword) {
+        document.getElementById("message").innerText = "Passwords do not match.";
+        return;
+      }
+
+      const { data, error } = await supabase.auth.updateUser(
+        { password: newPassword },
+        { accessToken }
+      );
+
+      if (error) {
+        document.getElementById("message").innerText = error.message;
+      } else {
+        document.getElementById("message").innerText = "Password reset successfully!";
+      }
     }
-  });
-</script>
-
+  </script>
 </body>
 </html>
