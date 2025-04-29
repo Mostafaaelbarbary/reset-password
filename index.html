@@ -59,36 +59,37 @@
     );
 
     const url = new URL(window.location.href);
-    const accessToken = url.searchParams.get("access_token");
-    const refreshToken = url.searchParams.get("refresh_token");
+    const code = url.searchParams.get("code");
 
-    if (!accessToken || !refreshToken) {
+    if (!code) {
       alert("Missing token. Please open the link from your email again.");
-      throw new Error("Missing access or refresh token.");
+      throw new Error("Missing recovery code");
     }
 
-    // Set the session using tokens from the URL
-    await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: refreshToken
-    });
+    // Exchange the code for a session
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      alert("Invalid or expired token. Please try the reset link again.");
+      throw error;
+    }
 
     window.resetPassword = async function () {
-      const newPassword = document.getElementById("password").value;
+      const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
       const message = document.getElementById("message");
 
-      if (!newPassword || !confirmPassword) {
+      if (!password || !confirmPassword) {
         message.innerText = "Please fill in both fields.";
         return;
       }
 
-      if (newPassword !== confirmPassword) {
+      if (password !== confirmPassword) {
         message.innerText = "Passwords do not match.";
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
         message.innerText = error.message;
