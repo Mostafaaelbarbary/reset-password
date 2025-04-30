@@ -66,13 +66,14 @@
       throw new Error("Missing recovery code");
     }
 
-    // Exchange the code for a session
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (error) {
-      alert("Invalid or expired token. Please try the reset link again.");
-      throw error;
-    }
+    // Wrap the session logic in an IIFE
+    (async () => {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) {
+        alert("Invalid or expired token. Please try the reset link again.");
+        console.error(error);
+      }
+    })();
 
     window.resetPassword = async function () {
       const password = document.getElementById("password").value;
